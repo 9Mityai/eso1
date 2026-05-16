@@ -1,10 +1,12 @@
 from fastapi import FastAPI, UploadFile, File
 import shutil
 import os
+import google.generativeai as genai
 from dotenv import load_dotenv
-from backend.gemini_service import analyze_text
 
 load_dotenv()
+
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 app = FastAPI()
 
 
@@ -27,7 +29,26 @@ async def upload_file(file: UploadFile = File(...)):
 @app.post("/analyze/")
 async def analyze(text: str):
     try:
-        analysis = analyze_text(text)
-        return {"analysis": analysis}
+        model = genai.GenerativeModel("gemini-1.5-pro")
+
+        prompt = f"""
+You are a clinical decision support system.
+
+Analyze the patient input and provide:
+
+1. Summary
+2. Differential diagnosis (top 3)
+3. Red flags
+4. Treatment options
+5. Questions for doctor
+
+Patient input:
+{text}
+"""
+
+        response = model.generate_content(prompt)
+
+        return {"analysis": response.text}
+
     except Exception as e:
         return {"error": str(e)}
