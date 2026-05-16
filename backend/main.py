@@ -3,6 +3,7 @@ import shutil
 import os
 import google.generativeai as genai
 from dotenv import load_dotenv
+from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 
@@ -11,6 +12,15 @@ if api_key:
     genai.configure(api_key=api_key)
 
 app = FastAPI()
+
+# Add CORS middleware to allow requests from frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, specify exact frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 UPLOAD_DIR = "uploads"
