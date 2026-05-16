@@ -6,7 +6,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+api_key = os.getenv("GEMINI_API_KEY")
+if api_key:
+    genai.configure(api_key=api_key)
+
 app = FastAPI()
 
 
@@ -28,6 +31,10 @@ async def upload_file(file: UploadFile = File(...)):
 
 @app.post("/analyze/")
 async def analyze(text: str):
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        return {"error": "GEMINI_API_KEY environment variable is not set"}
+    
     try:
         model = genai.GenerativeModel("gemini-1.5-pro")
 
